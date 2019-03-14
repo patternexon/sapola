@@ -1,9 +1,26 @@
-import sys
+from pathlib import Path 
 import requests
 from datetime import date
 from datetime import datetime
+import logging
+
+
+logPath="."
+fileName=Path(__file__).stem
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s",
+    handlers=[
+        logging.FileHandler("{0}/{1}.log".format(logPath, fileName)),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger()
 
 today = datetime.now()
+logger.debug("The time is %s", today)
 
 response = requests.get("http://api.github.com/users/patternexon/repos")
 
