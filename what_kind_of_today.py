@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pprint import pprint, pformat
 import logging
 import matplotlib.pyplot as plt
+import pandas as pd
 
 logPath="."
 fileName=Path(__file__).stem
@@ -17,6 +18,10 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+
+
+def render_data_frame(commits_per_date):
+    pd.DataFrame(commits_per_date, index=list(commits_per_date.keys())).plot(kind='bar')
 
 def draw_bar_graph(commits_per_date):
     plt.bar(range(len(commits_per_date)),list(commits_per_date.values()),
@@ -39,6 +44,8 @@ def get_commits_since(repo_name, duration):
     commit_count = len(commits_since) 
     logger.debug("Number of commits since %s day(s): %s", duration, commit_count)
     draw_bar_graph(commits_per_date)
+    # TODO pandas doesnt work
+    # render_data_frame(commits_per_date)
     return commit_count
 
 logger = logging.getLogger()
@@ -49,11 +56,9 @@ yesterday = today - timedelta(days=1)
 logger.debug("And thus yesterday was %s", yesterday)
 
 response = requests.get("http://api.github.com/users/patternexon/repos")
-
 repos = response.json()
 
 any_update = None
-
 for repo in repos:
     repo_name = repo['name']
     update_time = datetime.strptime(repo['updated_at'],"%Y-%m-%dT%H:%M:%SZ")
