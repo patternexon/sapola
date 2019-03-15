@@ -18,6 +18,18 @@ logging.basicConfig(
     ]
 )
 
+
+def get_commits_since(repo_name, duration):
+    since = today - timedelta(days=duration)
+    url_commits_since = repo['url']+'/commits?since='+ datetime.strftime(since,"%Y-%m-%dT%H:%M:%SZ")
+    logger.debug("Url for commits since %s %s", duration, url_commits_since)
+    commits_since = requests.get(url_commits_since).json()
+    commit_count = len(commits_since) 
+    logger.debug("Number of commits since %s: %s", duration, commit_count)
+    return commit_count
+
+
+
 logger = logging.getLogger()
 
 today = datetime.now()
@@ -36,15 +48,11 @@ for repo in repos:
     update_time = datetime.strptime(repo['updated_at'],"%Y-%m-%dT%H:%M:%SZ")
     logger.info("For repo %s the last update time was %s",repo_name, update_time)
     if(abs(today - update_time).days < 1):
+        commit_count = get_commits_since(repo_name,1)
         any_update = 1
-        url_commits_since_yesterday = repo['url']+'/commits?since='+ datetime.strftime(yesterday,"%Y-%m-%dT%H:%M:%SZ")
-        logger.debug("Url for commits since yesterday %s", url_commits_since_yesterday)
-        commits_since_yesterday = requests.get(url_commits_since_yesterday).json()
-        commit_count = len(commits_since_yesterday) 
-        logger.debug("Number of commits since yesterday: %s", commit_count)
         if commit_count > 5:
             print("Now you are COMMITTED")
 if any_update:
     print("You are ok - today was a push day")
 else:
-    print("Well son, you are loosing the battle")
+    print("Well son, you are loosing the battle")   
