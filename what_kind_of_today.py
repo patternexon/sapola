@@ -4,7 +4,7 @@ from datetime import date
 from datetime import datetime, timedelta
 from pprint import pprint, pformat
 import logging
-
+import matplotlib.pyplot as plt
 
 logPath="."
 fileName=Path(__file__).stem
@@ -18,6 +18,10 @@ logging.basicConfig(
     ]
 )
 
+def draw_bar_graph(commits_per_date):
+    plt.bar(range(len(commits_per_date)),list(commits_per_date.values()),
+    align='center',tick_label=list(commits_per_date.keys()))
+    plt.show()
 
 def get_commits_since(repo_name, duration):
     since = today - timedelta(days=duration)
@@ -27,19 +31,15 @@ def get_commits_since(repo_name, duration):
     commits_per_date = {}
     for commit_detail in commits_since:
         logger.info(commit_detail['commit']['committer']['date'])
-        commit_date = datetime.strptime(commit_detail['commit']['committer']['date'],"%Y-%m-%dT%H:%M:%SZ").date()
+        commit_date = datetime.strptime(commit_detail['commit']['committer']['date'],"%Y-%m-%dT%H:%M:%SZ").strftime("%Y-%m-%d")
         if commit_date in commits_per_date:
             commits_per_date[commit_date] += 1
         else:
             commits_per_date[commit_date] = 1
-    for c_date, c_count in commits_per_date.items():
-        print(c_date, c_count)
     commit_count = len(commits_since) 
     logger.debug("Number of commits since %s day(s): %s", duration, commit_count)
+    draw_bar_graph(commits_per_date)
     return commit_count
-
-
-
 
 logger = logging.getLogger()
 
