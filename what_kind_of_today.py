@@ -19,7 +19,8 @@ logging.basicConfig(
     ]
 )
 def render_data_frame(commits_per_date):
-    pd.DataFrame(commits_per_date, index=list(commits_per_date.keys())).plot(kind='bar')
+    pd.DataFrame(commits_per_date, index=['commits']).plot(kind='bar')
+    plt.show()
 
 def draw_bar_graph(commits_per_date):
     plt.bar(range(len(commits_per_date)),list(commits_per_date.values()),
@@ -31,6 +32,7 @@ def get_commits_since(repo_name, duration):
     url_commits_since = repo['url']+'/commits?since='+ datetime.strftime(since,"%Y-%m-%dT%H:%M:%SZ")
     logger.debug("Url for commits since %s %s", duration, url_commits_since)
     commits_since = requests.get(url_commits_since).json()
+    logger.debug("Commits retrieved: %s", len(commits_since))
     commits_per_date = {}
     for commit_detail in commits_since:
         logger.info(commit_detail['commit']['committer']['date'])
@@ -42,8 +44,7 @@ def get_commits_since(repo_name, duration):
     commit_count = len(commits_since) 
     logger.debug("Number of commits since %s day(s): %s", duration, commit_count)
     draw_bar_graph(commits_per_date)
-    # TODO pandas doesnt work
-    #render_data_frame(commits_per_date)
+    render_data_frame(commits_per_date)
     return commit_count
 
 logger = logging.getLogger()
@@ -62,7 +63,7 @@ for repo in repos:
     update_time = datetime.strptime(repo['updated_at'],"%Y-%m-%dT%H:%M:%SZ")
     logger.info("For repo %s the last update time was %s",repo_name, update_time)
     if(abs(today - update_time).days < 1):
-        commit_count = get_commits_since(repo_name,3)
+        commit_count = get_commits_since(repo_name,1)
         any_update = 1
         if commit_count > 5:
             print("Now you are COMMITTED")
