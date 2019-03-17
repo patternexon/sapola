@@ -19,7 +19,6 @@ logging.basicConfig(
     ]
 )
 def render_data_frame(commits_per_date):
-    #pd.DataFrame(commits_per_date, index=list(commits_per_date.keys())).plot(kind='bar')
     pd.DataFrame(commits_per_date, index=['commits']).plot(kind='bar')
     plt.show()
 
