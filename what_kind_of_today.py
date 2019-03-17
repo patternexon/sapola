@@ -18,8 +18,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
-
 def render_data_frame(commits_per_date):
     pd.DataFrame(commits_per_date, index=list(commits_per_date.keys())).plot(kind='bar')
 
@@ -45,7 +43,7 @@ def get_commits_since(repo_name, duration):
     logger.debug("Number of commits since %s day(s): %s", duration, commit_count)
     draw_bar_graph(commits_per_date)
     # TODO pandas doesnt work
-    # render_data_frame(commits_per_date)
+    #render_data_frame(commits_per_date)
     return commit_count
 
 logger = logging.getLogger()
