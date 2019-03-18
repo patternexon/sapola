@@ -19,8 +19,11 @@ logging.basicConfig(
     ]
 )
 def render_data_frame(commits_per_date):
-    pd.DataFrame(commits_per_date, index=['commits']).plot(kind='bar')
-    plt.show()
+    #pd.DataFrame(commits_per_date, index=['commits']).plot(kind='bar')
+    df = pd.DataFrame(commits_per_date)
+    logger.debug(df) 
+    #df.groupby([commits_per_date.keys])
+    #plt.show()
 
 def draw_bar_graph(commits_per_date):
     plt.bar(range(len(commits_per_date)),list(commits_per_date.values()),
@@ -31,9 +34,33 @@ def get_branches(repo_name, duration):
     r = requests.get("https://api.github.com:443/repos/patternexon/sapola/branches")
     branches = r.json()
     count = 0
+    commits_per_branch = {}
     for branch in branches:
-        count =+ get_commits_since(repo_name, duration,branch['name'])
+        logger.debug("Now running for %s", branch['name'])
+        commits_per_branch[branch['name']] = get_all_commits_in_a_branch_since(repo_name, duration, branch['name'])
+        #count =+ get_commits_since(repo_name, duration,branch['name'])
+    logger.debug(commits_per_branch)
+    render_data_frame(commits_per_branch)
     return count
+
+def get_all_commits_in_a_branch_since(repo_name, duration, branch="master"):
+    since = today - timedelta(days=duration)
+    url_all_commits ="https://api.github.com:443/repos/patternexon/"+repo_name+'/commits?sha='+branch
+    logger.debug("Getting %s", url_all_commits)
+    all_commits = requests.get(url_all_commits).json()
+    commits_per_date = {}
+    for commit in all_commits:
+        commit_datetime = datetime.strptime(commit['commit']['author']['date'],"%Y-%m-%dT%H:%M:%SZ")
+        if commit_datetime > since:
+            logger.debug("The date is %s", commit_datetime)
+            commit_date = commit_datetime.strftime("%Y-%m-%d")
+            if commit_date in commits_per_date:
+                commits_per_date[commit_date] += 1
+            else:
+                commits_per_date[commit_date] = 1
+    logger.debug(commits_per_date)
+    return commits_per_date
+
 
 def get_commits_since(repo_name, duration, branch="master"):
     since = today - timedelta(days=duration)
@@ -71,7 +98,7 @@ for repo in repos:
     update_time = datetime.strptime(repo['updated_at'],"%Y-%m-%dT%H:%M:%SZ")
     logger.info("For repo %s the last update time was %s",repo_name, update_time)
     if(abs(today - update_time).days < 1):
-        commit_count = get_branches(repo_name, 2)
+        commit_count = get_branches(repo_name, 1)
         #commit_count = get_commits_since(repo_name,1)
         any_update = 1
         if commit_count > 5:
