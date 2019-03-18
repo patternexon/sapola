@@ -27,7 +27,15 @@ def draw_bar_graph(commits_per_date):
     align='center',tick_label=list(commits_per_date.keys()))
     plt.show()
 
-def get_commits_since(repo_name, duration):
+def get_branches(repo_name, duration):
+    r = requests.get("https://api.github.com:443/repos/patternexon/sapola/branches")
+    branches = r.json()
+    count = 0
+    for branch in branches:
+        count =+ get_commits_since(repo_name, duration,branch['name'])
+    return count
+
+def get_commits_since(repo_name, duration, branch="master"):
     since = today - timedelta(days=duration)
     url_commits_since = repo['url']+'/commits?since='+ datetime.strftime(since,"%Y-%m-%dT%H:%M:%SZ")
     logger.debug("Url for commits since %s %s", duration, url_commits_since)
@@ -63,7 +71,8 @@ for repo in repos:
     update_time = datetime.strptime(repo['updated_at'],"%Y-%m-%dT%H:%M:%SZ")
     logger.info("For repo %s the last update time was %s",repo_name, update_time)
     if(abs(today - update_time).days < 1):
-        commit_count = get_commits_since(repo_name,1)
+        commit_count = get_branches(repo_name, 2)
+        #commit_count = get_commits_since(repo_name,1)
         any_update = 1
         if commit_count > 5:
             print("Now you are COMMITTED")
